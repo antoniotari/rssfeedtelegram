@@ -11,10 +11,10 @@ CBC_FEED = 'https://www.cbc.ca/cmlink/rss-canada'
 GW_FEED = 'https://www.guitarworld.com/feeds/all'
 METAL_INJECTION_FEED = 'http://feeds.feedburner.com/metalinjection'
 
-TELEGRAM_CHANNEL_MUSIC = '@musicguitarnews'
-TELEGRAM_BOT_TOKEN_MUSIC = '1567491461:AAFa6sWr9KXnqJ_ufBabJVNyS7Rq1Z50UCA'
-TELEGRAM_CHANNEL_NEWS = '@canadanewschannel'
-TELEGRAM_BOT_TOKEN_NEWS = '1518827417:AAEhEI-Ux9gue0Y85ADqhF2DCfsbzxiUk0I'
+TELEGRAM_CHANNEL_MUSIC = 'your channel here'
+TELEGRAM_BOT_TOKEN_MUSIC = 'bot token'
+TELEGRAM_CHANNEL_NEWS = 'other channel'
+TELEGRAM_BOT_TOKEN_NEWS = 'other token'
 
 PARSE_MODE = ['Markdown', 'html']
 

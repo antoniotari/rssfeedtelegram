@@ -6,7 +6,8 @@ import json
 import time
 
 CD_FEED = 'https://canadiandimension.com/feeds/articles'
-VICE_FEED = 'https://www.vice.com/en/rss?locale=en_ca'
+VICE_FEED_CA = 'https://www.vice.com/en/rss?locale=en_ca'
+VICE_FEED = 'https://www.vice.com/en/rss?locale=en_us'
 VOX_FEED = 'https://www.vox.com/rss/index.xml'
 CBC_FEED = 'https://www.cbc.ca/cmlink/rss-canada'
 GW_FEED = 'https://www.guitarworld.com/feeds/all'
@@ -24,7 +25,7 @@ TELEGRAM_BOT_TOKEN_NEWS = 'other token here'
 PARSE_MODE = ['Markdown', 'html']
 
 urls_music = [METAL_INJECTION_FEED, GW_FEED, PG_REVIEWS_FEED, PG_RIG_FEED, PG_LESSONS_FEED, PG_PROJECTS_FEED]
-urls_news = [CD_FEED, VOX_FEED, CBC_FEED]
+urls_news = [VICE_FEED, CD_FEED, VOX_FEED, CBC_FEED, VICE_FEED_CA]
 
 CACHE_PATH = "/home/antonio/feedFetcher/cache"
 
@@ -55,3 +56,7 @@ def runFetch():
     #print('execution done')
     now = datetime.datetime.now()
     return str(now)
+
+#call
+#runFetch()
+#from your python script

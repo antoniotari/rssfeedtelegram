@@ -1,62 +1,63 @@
 import feedparser
-#import schedule
 import datetime
 import requests
 import json
 import time
+import os.path
+import urllib.parse
 
-CD_FEED = 'https://canadiandimension.com/feeds/articles'
-VICE_FEED_CA = 'https://www.vice.com/en/rss?locale=en_ca'
-VICE_FEED = 'https://www.vice.com/en/rss?locale=en_us'
-VOX_FEED = 'https://www.vox.com/rss/index.xml'
-CBC_FEED = 'https://www.cbc.ca/cmlink/rss-canada'
-GW_FEED = 'https://www.guitarworld.com/feeds/all'
-METAL_INJECTION_FEED = 'http://feeds.feedburner.com/metalinjection'
-PG_REVIEWS_FEED = "https://www.premierguitar.com/rss/2"
-PG_RIG_FEED = "https://www.premierguitar.com/rss/5"
-PG_LESSONS_FEED = 'https://www.premierguitar.com/rss/6'
-PG_PROJECTS_FEED = 'https://www.premierguitar.com/rss/7'
-
-TELEGRAM_CHANNEL_MUSIC = 'channel id here'
-TELEGRAM_BOT_TOKEN_MUSIC = 'token here'
-TELEGRAM_CHANNEL_NEWS = 'other channel id here'
-TELEGRAM_BOT_TOKEN_NEWS = 'other token here'
-
+TELEGRAM_SENDMESSAGE_URL = "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&parse_mode=%s&text=%s"
+HTML_HREF = "<a href=\"%s\">%s</a>"
 PARSE_MODE = ['Markdown', 'html']
+CACHE_PATH = "cache"
 
-urls_music = [METAL_INJECTION_FEED, GW_FEED, PG_REVIEWS_FEED, PG_RIG_FEED, PG_LESSONS_FEED, PG_PROJECTS_FEED]
-urls_news = [VICE_FEED, CD_FEED, VOX_FEED, CBC_FEED, VICE_FEED_CA]
+KEY_CACHE_URLS = 'urls'
+KEY_FEED_LINK = 'link'
+KEY_FEED_TITLE = 'title'
 
-CACHE_PATH = "/home/antonio/feedFetcher/cache"
+class Rss2Telegram:
 
-def parse_send_message(feeds, token, channel, parse_mode):
-    cache_file = open(CACHE_PATH, "r")
-    cache = json.loads(cache_file.read())
-    for feed in feeds:
-        for entry in feed:
-            if (entry['link'] not in cache['urls']):
-                text = "<a href=\"%s\">%s</a>"%(entry['link'],entry['title'])
-                send_text = "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&parse_mode=%s&text=%s"%(token, channel, parse_mode, text)
-                #print(send_text)
-                response = requests.get(send_text)
-                #response_json = json.loads(response.json())
-                if (response.json()['ok'] is True):
-                    cache['urls'].append(entry['link'])
-                time.sleep(1)
-    cache_file = open(CACHE_PATH, "w")
-    cache_file.write(json.dumps(cache))
-    cache_file.close()
+    def __init__(self, urls, token, channel, parse_mode = PARSE_MODE[1], cache_path = CACHE_PATH):
+        self.urls = urls
+        self.token = token
+        self.channel = channel
+        self.parse_mode = parse_mode
+        self.cache_path = cache_path
 
-def runFetch():
-    feeds_music = [feedparser.parse(url)['entries'] for url in urls_music]
-    feeds_news = [feedparser.parse(url)['entries'] for url in urls_news]
-    parse_send_message(feeds_music, TELEGRAM_BOT_TOKEN_MUSIC, TELEGRAM_CHANNEL_MUSIC, PARSE_MODE[1])
-    #time.sleep(60)
-    parse_send_message(feeds_news, TELEGRAM_BOT_TOKEN_NEWS, TELEGRAM_CHANNEL_NEWS, PARSE_MODE[1])
-    #print('execution done')
-    now = datetime.datetime.now()
-    return str(now)
+    def parse_send_message(self, feeds):
+        response_report = []
+        cache = None
+        if os.path.isfile(self.cache_path):
+            cache_file = open(self.cache_path, "r")
+            cache = json.loads(cache_file.read())
+        else:
+            cache = json.loads("{\"urls\" : []}")
+
+        for feed in feeds:
+            for entry in feed:
+                if (entry[KEY_FEED_LINK] not in cache[KEY_CACHE_URLS]):
+                    text = HTML_HREF%(entry[KEY_FEED_LINK],urllib.parse.quote(entry[KEY_FEED_TITLE]))
+                    send_text = TELEGRAM_SENDMESSAGE_URL%(self.token, self.channel, self.parse_mode, text)
+                    response = requests.get(send_text)
+                    resp_json = response.json()
+                    if (resp_json['ok'] is True):
+                        cache[KEY_CACHE_URLS].append(entry['link'])
+                    else:
+                        #add url and title to error report
+                        resp_json['urlFeed'] = entry[KEY_FEED_LINK]
+                        resp_json['titleFeed'] = entry[KEY_FEED_TITLE]
+                    response_report.append(resp_json)
+                    time.sleep(1)
+
+        cache_file = open(self.cache_path, "w")
+        cache_file.write(json.dumps(cache))
+        cache_file.close()
+        return response_report
+
+    def run_fetch(self):
+        feeds = [feedparser.parse(url)['entries'] for url in self.urls]
+        return self.parse_send_message(feeds)
 
 #call
-#runFetch()
+#run_fetch()
 #from your python script

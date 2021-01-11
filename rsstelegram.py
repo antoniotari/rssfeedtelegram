@@ -36,7 +36,7 @@ class Rss2Telegram:
         for feed in feeds:
             for entry in feed:
                 if (entry[KEY_FEED_LINK] not in cache[KEY_CACHE_URLS]):
-                    text = HTML_HREF%(entry[KEY_FEED_LINK],urllib.parse.quote(entry[KEY_FEED_TITLE]))
+                    text = HTML_HREF%(entry[KEY_FEED_LINK], urllib.parse.quote(entry[KEY_FEED_TITLE]))
                     send_text = TELEGRAM_SENDMESSAGE_URL%(self.token, self.channel, self.parse_mode, text)
                     response = requests.get(send_text)
                     resp_json = response.json()
